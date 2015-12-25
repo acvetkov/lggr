@@ -22,7 +22,7 @@ export default class WebFileTransport {
         var date = new Date().toISOString();
         var formattedString = `${date} ${method} ${prefix}:`;
         if (typeof args[0] === 'string') {
-             formattedString += this._replacer.replace(args[0], args.slice(1));
+            formattedString += this._replacer.replace(args[0], args.slice(1));
         }
         return formattedString;
     }
