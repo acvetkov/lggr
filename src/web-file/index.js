@@ -10,17 +10,17 @@ const OPTIONS = {
 export default class WebFileTransport {
     constructor (options = {}) {
         options = Object.assign({}, OPTIONS, options);
-        this._replacer = new Replacer();
-        this._logFile = new WebFile(options);
+        this._replacer = options.replacer || new Replacer();
+        this._logFile = options.webFile || new WebFile(options);
     }
 
     write (method, formattedString) {
         this._logFile.push(formattedString);
     }
 
-    format (method, args) {
+    format (method, prefix = '', args = []) {
         var date = new Date().toISOString();
-        var formattedString = `${date} ${method} `;
+        var formattedString = `${date} ${method} ${prefix}:`;
         if (typeof args[0] === 'string') {
              formattedString += this._replacer.replace(args[0], args.slice(1));
         }

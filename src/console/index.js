@@ -2,10 +2,10 @@
 import Replacer from '../replacer';
 
 export default class ConsoleTransport {
-    constructor (replacer = createReplacer()) {
+    constructor (options = {}) {
         this.replacePlaceholders = false;
-        this._replacer = replacer;
-        this._console = console ? console : createFakeConsole();
+        this._replacer = options.replacer || new Replacer();
+        this._console = console ? console : {};
     }
 
     write (method, formattedArgs) {
@@ -30,15 +30,6 @@ export default class ConsoleTransport {
     }
 }
 
-function createFakeConsole() {
-    var empty = function () {};
-    var methods = ['log', 'info', 'warn', 'error'];
-    return methods.reduce((result, method) => {
-        result[method] = empty;
-        return result;
-    }, {});
-}
-
 function appendPrefix(prefix, args) {
     if (typeof args[0] === 'string') {
         args[0] = `${prefix}: ${args[0]}`;
@@ -53,8 +44,4 @@ function replacePlaceholders(replacer, args) {
         return replacer.replace(args[0], args.slice(1));
     }
     return args;
-}
-
-function createReplacer() {
-    return new Replacer();
 }
