@@ -5,7 +5,7 @@ const OPTIONS = {
     nanString: 'NaN'
 };
 
-export default class Placeholders {
+export default class Replacer {
     constructor (options = {}) {
         options = Object.assign({}, options, OPTIONS);
         this._formats = options.formats || createDefaultFormats(options);
