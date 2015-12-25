@@ -1,6 +1,6 @@
 # How It Works
 
-```javascipt
+```javascript
 var logger = require('logger');
 
 // simple usage
