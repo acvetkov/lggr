@@ -1,6 +1,6 @@
 /**
  * Logger class.
- * Contains actual log methods and logic for transports/levels managing
+ * Contains actual log methods and logic for writers/formatters/levels managing
  */
 
 export default class Logger {
@@ -19,6 +19,8 @@ export default class Logger {
     }
 
     /**
+     * Crates new logger with options of current logger.
+     * New logger behaves like the old one and their options are synchronised.
      * @param {String} [prefix]
      * @returns {Logger}
      */
@@ -27,6 +29,8 @@ export default class Logger {
     }
 
     /**
+     * For every writer formats aruments by corresponding formatter (if it's exist)
+     * and calls 'write' method.
      * @param {String} method
      * @param {Array<*>} args
      */
@@ -42,6 +46,7 @@ export default class Logger {
     }
 
     /**
+     * Sets log levels for specified writer (by name)
      * @param {String} name
      * @param {Array<String>} levels
      */
@@ -50,6 +55,7 @@ export default class Logger {
     }
 
     /**
+     * Adds writer to logger
      * @param {String} name
      * @param {Writer} writer
      */
@@ -58,6 +64,7 @@ export default class Logger {
     }
 
     /**
+     * Removes writer by name
      * @param {Object} name
      */
     removeWriter (name) {
@@ -67,6 +74,7 @@ export default class Logger {
     }
 
     /**
+     * Adds formatter for specified writer (by name)
      * @param {String} name
      * @param {Writer} formatter
      */
@@ -75,6 +83,7 @@ export default class Logger {
     }
 
     /**
+     * Removes formatter by name
      * @param {Object} name
      */
     removeFormatter (name) {
