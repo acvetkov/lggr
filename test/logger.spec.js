@@ -1,7 +1,7 @@
 
-import logger from '../src/index';
-import ConsoleTransport from '../src/console';
-// import WebFileTransport from '../src/web-file';
+import Logger from '../src/logger';
+import ConsoleWriter from '../src/console/writer';
+import ConsoleFormatter from '../src/console/formatter';
 
 var sandbox = sinon.sandbox.create();
 
@@ -10,50 +10,193 @@ describe('Logger', function () {
         sandbox.restore();
     });
 
-    it('should write to default transport', function () {
-        var defaultLogger = logger();
-        var spy = sandbox.spy(logger.defaultOptions.transports[0], 'write');
-        defaultLogger.log('Hello, %s!', 'world');
-        assert.calledOnce(spy);
-        assert.calledWith(spy, 'log', ['Hello, %s!', 'world']);
+    describe('message', function () {
+        it('should write to passed writer', function () {
+            var writer = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('prefix', {
+                methods: ['log'],
+                writers: {console: writer},
+                formatters: {console: formatter},
+                levels: {console: ['log']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(formatSpy);
+            assert.calledOnce(writeSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+        });
+
+        it('should write to passed writer without formatter', function () {
+            var writer = new ConsoleWriter();
+            var logger = new Logger(null, {
+                methods: ['log'],
+                writers: {console: writer},
+                formatters: {},
+                levels: {console: ['log']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(writeSpy);
+            assert.calledWith(writeSpy, 'log', null, ['Hello, %s!', 'world']);
+        });
+
+        it('should write to passed writer without levels', function () {
+            var writer = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('prefix', {
+                methods: ['log'],
+                writers: {console: writer},
+                formatters: {console: formatter},
+                levels: {}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(formatSpy);
+            assert.calledOnce(writeSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+        });
+
+        it('should write to several passed writers with appropriate levels', function () {
+            var writer = new ConsoleWriter();
+            var writer2 = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('prefix', {
+                methods: ['log', 'error'],
+                writers: {console: writer, file: writer2},
+                formatters: {console: formatter, file: formatter},
+                levels: {console: ['error'], file: ['log', 'error']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var writeSpy2 = sandbox.spy(writer2, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+
+            logger.error('Hello, %s!', 'world');
+            assert.calledOnce(writeSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledTwice(formatSpy);
+            assert.calledWith(formatSpy, 'error', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'error', 'prefix', ['prefix: Hello, world!']);
+            assert.calledWith(writeSpy2, 'error', 'prefix', ['prefix: Hello, world!']);
+            sandbox.reset();
+
+            logger.log('Hello %s, %s%i!', 'again', 'world', 111);
+            assert.notCalled(writeSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledOnce(formatSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix',
+                              ['Hello %s, %s%i!', 'again', 'world', 111]);
+            assert.calledWith(writeSpy2, 'log', 'prefix', ['prefix: Hello again, world111!']);
+        });
+
     });
 
-    it('should write to default transport with prefix', function () {
-        var defaultLogger = logger('test-prefix');
-        var spy = sandbox.spy(logger.defaultOptions.transports[0], 'write');
-        defaultLogger.log('Hello, %s!', 'world');
-        assert.calledOnce(spy);
-        assert.calledWith(spy, 'log', ['test-prefix: Hello, %s!', 'world']);
+    describe('setLevels', function () {
+        it('should set levels to writer', function () {
+            var writer = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('prefix', {
+                methods: ['log', 'info'],
+                writers: {console: writer},
+                formatters: {console: formatter},
+                levels: {console: ['error']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+            logger.log('Hello, %s!', 'world');
+            assert.notCalled(formatSpy);
+            assert.notCalled(writeSpy);
+
+            logger.setLevels('console', ['log']);
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(formatSpy);
+            assert.calledOnce(writeSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+        });
     });
 
-    it('should write to specified transport and format placeholders', function () {
-        var transport = new ConsoleTransport();
-        transport.replacePlaceholders = true;
-        var spy = sandbox.spy(transport, 'write');
-        var consoleLogger = logger(null, {transports: [transport]});
+    describe('add/remove Writer/Formatter', function () {
+        it('should add writer and formatter to logger', function () {
+            var writer = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var writer2 = new ConsoleWriter();
+            var logger = new Logger('prefix', {
+                methods: ['log', 'info'],
+                writers: {console: writer},
+                formatters: {console: formatter},
+                levels: {console: ['log']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var writeSpy2 = sandbox.spy(writer2, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
 
-        consoleLogger.log('Hello, %s!', 'world');
-        assert.calledOnce(spy);
-        assert.calledWith(spy, 'log', 'Hello, world!');
+            logger.addWriter('file', writer2);
+            logger.log('Hello, %s!', 'world');
 
-        consoleLogger.error('Hello, %s! I am %i ye%srs old', 'world', 45.1, 'a');
-        assert.calledTwice(spy);
-        assert.calledWith(spy, 'error', 'Hello, world! I am 45 years old');
+            assert.calledOnce(writeSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledOnce(formatSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+            sandbox.reset();
+
+            logger.addFormatter('file', formatter);
+            logger.log('Hello, %s!', 'world');
+
+            assert.calledOnce(writeSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledTwice(formatSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledWith(writeSpy2, 'log', 'prefix', ['prefix: Hello, world!']);
+        });
+
+        it('should remove writer and formatter from logger', function () {
+            var writer = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var writer2 = new ConsoleWriter();
+            var logger = new Logger('prefix', {
+                methods: ['log', 'info'],
+                writers: {console: writer, file: writer2},
+                formatters: {console: formatter, file: formatter},
+                levels: {console: ['log']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var writeSpy2 = sandbox.spy(writer2, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(writeSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledTwice(formatSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledWith(writeSpy2, 'log', 'prefix', ['prefix: Hello, world!']);
+            sandbox.reset();
+
+            logger.removeFormatter('file');
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(writeSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledOnce(formatSpy);
+            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+            sandbox.reset();
+
+            logger.removeWriter('console');
+            logger.log('Hello, %s!', 'world');
+            assert.notCalled(writeSpy);
+            assert.notCalled(formatSpy);
+            assert.calledOnce(writeSpy2);
+            assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+        });
     });
 
-    it('should write to multiple transports', function () {
-        var transport1 = new ConsoleTransport();
-        var transport2 = new ConsoleTransport();
-        transport2.replacePlaceholders = true;
-        sandbox.spy(transport1, 'write');
-        sandbox.spy(transport2, 'write');
-
-        var consoleLogger = logger(null, {transports: [transport1, transport2]});
-
-        consoleLogger.log('Hello, %s!', 'world');
-        assert.calledOnce(transport1.write);
-        assert.calledOnce(transport2.write);
-        assert.calledWith(transport1.write, 'log', ['Hello, %s!', 'world']);
-        assert.calledWith(transport2.write, 'log', 'Hello, world!');
-    });
 });

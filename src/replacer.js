@@ -1,5 +1,5 @@
 /**
- * j
+ * Replaces string placeholders
  */
 
 const OPTIONS = {
