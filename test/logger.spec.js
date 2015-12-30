@@ -10,7 +10,29 @@ describe('Logger', function () {
         sandbox.restore();
     });
 
-    describe('message', function () {
+    describe('constructor logic', function () {
+        it('should trow error when required options are missing', function () {
+            assert.throws(() => new Logger());
+            assert.throws(() => new Logger(null, {}));
+            assert.throws(() => new Logger(null, {methods: [], writers: {}}));
+            assert.throws(() => new Logger(null, {writers: {}, formatters: {}, levels: {}}));
+        });
+
+        it('should create functions for passed methods', function () {
+            var logger = new Logger('prefix', {
+                methods: ['log', 'error', 'foo', 'bar'],
+                writers: {},
+                formatters: {},
+                levels: {}
+            });
+            assert.isFunction(logger.log);
+            assert.isFunction(logger.error);
+            assert.isFunction(logger.foo);
+            assert.isFunction(logger.bar);
+        });
+    });
+
+    describe('logging logic', function () {
         it('should write to passed writer', function () {
             var writer = new ConsoleWriter();
             var formatter = new ConsoleFormatter();
@@ -196,6 +218,21 @@ describe('Logger', function () {
             assert.notCalled(formatSpy);
             assert.calledOnce(writeSpy2);
             assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+        });
+    });
+
+    describe('clone', function () {
+        it('should return new Logger instance', function () {
+            var writer = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('prefix', {
+                methods: ['log'],
+                writers: {console: writer},
+                formatters: {console: formatter},
+                levels: {console: ['log']}
+            });
+            var otherLogger = logger.clone();
+            assert.instanceOf(otherLogger, Logger);
         });
     });
 

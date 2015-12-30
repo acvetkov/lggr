@@ -3,6 +3,8 @@
  * Contains actual log methods and logic for writers/formatters/levels managing
  */
 
+const REQUIRED_OPTIONS = ['levels', 'writers', 'formatters', 'methods'];
+
 export default class Logger {
     /**
      * @param {String} [prefix]
@@ -13,6 +15,7 @@ export default class Logger {
      * @param {Array<String>} options.methods
      */
     constructor (prefix, options) {
+        assertOptions(options);
         this._prefix = prefix;
         this._opt = options;
         this._createMethods(this._opt.methods);
@@ -126,4 +129,17 @@ function isMethodAllowed(method, levels) {
         return levels.indexOf(method) !== -1;
     }
     return true;
+}
+
+function assertOptions(options) {
+    if (!options) {
+        throw new Error('You must specify "options" parameter for Logger');
+    }
+    REQUIRED_OPTIONS.forEach(optionName => {
+        if (!options[optionName]) {
+            throw new Error(
+                'You must specify "options.' + optionName + '" parameter for Logger'
+            );
+        }
+    });
 }
