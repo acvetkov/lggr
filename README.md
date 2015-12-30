@@ -1,17 +1,17 @@
 # How It Works
 
 ```javascript
-import {Logger, ConsoleWriter, ConsoleFormatter, FileFriter, FileFormatter} from 'logger';
+import {Logger, ConsoleWriter, ConsoleFormatter, WebFileFriter, WebFileFormatter} from 'logger';
 
 var options = {
     methods: ['log', 'info', 'warn', 'error'],
     writers: {
         console: new ConsoleWriter(),
-        file: new FileFriter()
+        file: new WebFileFriter()
     },
     formatters: {
         console: new ConsoleFormatter(),
-        file: new FileFormatter()
+        file: new WebFileFormatter()
     },
     levels: {
         console: ['warn', 'error'],
