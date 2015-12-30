@@ -2,8 +2,9 @@
  * Replaces string placeholders
  */
 
+const REG_EXP = /%(.)/gm;
+
 const OPTIONS = {
-    regExp: /%(.)/gm,
     limitStringLength: 300,
     nanString: 'NaN'
 };
@@ -11,16 +12,17 @@ const OPTIONS = {
 export default class Replacer {
     /**
      * @param {Object} [options]
-     * @param {RegExp} options.regExp
-     * @param {Number} options.limitStringLength
-     * @param {nanString} options.String
+     * @param {Object} [options.formats]
+     * @param {RegExp} [options.regExp]
+     * @param {Number} [options.limitStringLength]
+     * @param {String} [options.nanString]
      */
     constructor (options = {}) {
-        options = Object.assign({}, options, OPTIONS);
+        options = Object.assign({}, OPTIONS, options);
         this._formats = options.formats || createDefaultFormats(options);
-        this._regExp = options.regExp;
         this._limitStringLength = options.limitStringLength;
         this._nanString = options.nanString;
+        this._regExp = REG_EXP;
     }
 
     /**
@@ -60,7 +62,7 @@ export default class Replacer {
      */
     _formatItem (placeholder, item) {
         var formatter = this._formats[placeholder];
-        return formatter ? formatter(item) : null;
+        return formatter ? formatter(item) : `%${placeholder}`;
     }
 }
 
@@ -70,14 +72,13 @@ export default class Replacer {
  */
 function createDefaultFormats(options) {
     return {
-        i: formatIntegerNumber.bind(null, options.nanString),
-        d: formatIntegerNumber.bind(null, options.nanString),
-        f: formatFloatNumber.bind(null, options.nanString),
         o: formatJSON,
         j: formatJSON,
-        l: formatLimitedString.bind(null, options.limitStringLength),
         s: formatString,
-        '%': identity
+        l: formatLimitedString.bind(null, options.limitStringLength),
+        i: formatIntegerNumber.bind(null, options.nanString),
+        d: formatIntegerNumber.bind(null, options.nanString),
+        f: formatFloatNumber.bind(null, options.nanString)
     };
 }
 
@@ -105,7 +106,7 @@ function formatLimitedString(limitLength, data) {
  */
 function formatIntegerNumber(nanString, data) {
     return typeof data === 'number' ?
-        String(Math.floor(data)) : nanString;
+        String(Math.round(data)) : nanString;
 }
 
 /**
@@ -128,12 +129,4 @@ function formatJSON(data) {
     } catch (e) {
         return '';
     }
-}
-
-/**
- * @param {*} data
- * @returns {*}
- */
-function identity(data) {
-    return data;
 }
