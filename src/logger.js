@@ -3,6 +3,8 @@
  * Contains actual log methods and logic for writers/formatters/levels managing
  */
 
+import {shallowCopyObject} from './utils';
+
 const REQUIRED_OPTIONS = ['levels', 'writers', 'formatters', 'methods'];
 
 export default class Logger {
@@ -16,6 +18,7 @@ export default class Logger {
      */
     constructor (prefix, options) {
         assertOptions(options);
+        this._clones = [];
         this._prefix = prefix;
         this._opt = options;
         this._createMethods(this._opt.methods);
@@ -23,12 +26,15 @@ export default class Logger {
 
     /**
      * Crates new logger with options of current logger.
-     * New logger behaves like the old one and their options are synchronised.
+     * New logger behaves like the old one.
+     * Options are synchronised in direction parent->clone.
      * @param {String} [prefix]
      * @returns {Logger}
      */
     clone (prefix) {
-        return new Logger(prefix, this._opt);
+        var clone = new Logger(prefix, shallowCopyObject(this._opt));
+        this._clones.push(clone);
+        return clone;
     }
 
     /**
@@ -55,6 +61,7 @@ export default class Logger {
      */
     setLevels (name, levels) {
         this._opt.levels[name] = levels;
+        this._updateClones('setLevels', [name, levels]);
     }
 
     /**
@@ -64,6 +71,7 @@ export default class Logger {
      */
     addWriter (name, writer) {
         this._opt.writers[name] = writer;
+        this._updateClones('addWriter', [name, writer]);
     }
 
     /**
@@ -74,6 +82,7 @@ export default class Logger {
         if (this._opt.writers[name]) {
             delete this._opt.writers[name];
         }
+        this._updateClones('removeWriter', [name]);
     }
 
     /**
@@ -83,6 +92,7 @@ export default class Logger {
      */
     addFormatter (name, formatter) {
         this._opt.formatters[name] = formatter;
+        this._updateClones('addFormatter', [name, formatter]);
     }
 
     /**
@@ -93,6 +103,7 @@ export default class Logger {
         if (this._opt.formatters[name]) {
             delete this._opt.formatters[name];
         }
+        this._updateClones('removeFormatter', [name]);
     }
 
     /**
@@ -117,6 +128,17 @@ export default class Logger {
             );
         });
     }
+
+    /**
+     * Calls passed method for all cloned loggers
+     * @param {} method
+     * @param {} args
+     */
+    _updateClones (method, args) {
+        this._clones.forEach(clone => {
+            clone[method](...args);
+        });
+    }
 }
 
 /**
@@ -131,6 +153,10 @@ function isMethodAllowed(method, levels) {
     return true;
 }
 
+/**
+ * @param {Object} [options]
+ * @throws {Error}
+ */
 function assertOptions(options) {
     if (!options) {
         throw new Error('You must specify "options" parameter for Logger');

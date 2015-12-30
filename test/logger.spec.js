@@ -223,16 +223,64 @@ describe('Logger', function () {
 
     describe('clone', function () {
         it('should return new Logger instance', function () {
+            var logger = new Logger('prefix', {
+                methods: ['log'], writers: {}, formatters: {}, levels: {}
+            });
+            var otherLogger = logger.clone();
+            assert.instanceOf(otherLogger, Logger);
+        });
+
+        it('should sync options in direction parent->clone', function () {
             var writer = new ConsoleWriter();
             var formatter = new ConsoleFormatter();
             var logger = new Logger('prefix', {
                 methods: ['log'],
                 writers: {console: writer},
-                formatters: {console: formatter},
-                levels: {console: ['log']}
+                formatters: {},
+                levels: {}
             });
-            var otherLogger = logger.clone();
-            assert.instanceOf(otherLogger, Logger);
+            var writeSpy = sandbox.spy(writer, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+
+            var clonedLogger = logger.clone('new-prefix');
+            logger.setLevels('console', ['log']);
+            logger.addFormatter('console', formatter);
+
+            clonedLogger.log('Hello, %s!', 'world');
+            assert.calledOnce(formatSpy);
+            assert.calledOnce(writeSpy);
+            assert.calledWith(formatSpy, 'log', 'new-prefix', ['Hello, %s!', 'world']);
+            assert.calledWith(writeSpy, 'log', 'new-prefix', ['new-prefix: Hello, world!']);
+        });
+
+        it('should not sync options in direction clone->parent', function () {
+            var writer = new ConsoleWriter();
+            var writer2 = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('parent-prefix', {
+                methods: ['log'],
+                writers: {console: writer},
+                formatters: {},
+                levels: {console: ['error']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var writeSpy2 = sandbox.spy(writer2, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+
+            var clonedLogger = logger.clone('clone-prefix');
+            clonedLogger.setLevels('console', ['log', 'error']);
+            clonedLogger.addFormatter('console', formatter);
+            clonedLogger.addWriter('file', writer2);
+
+            logger.log('Hello, %s!', 'world');
+            assert.notCalled(writeSpy);
+            assert.notCalled(formatSpy);
+            logger.setLevels('console', ['log']);
+            logger.log('Hello, %s!', 'world');
+            assert.notCalled(formatSpy);
+            assert.notCalled(writeSpy2);
+            assert.calledOnce(writeSpy);
+            assert.calledWith(writeSpy, 'log', 'parent-prefix', ['Hello, %s!', 'world']);
         });
     });
 
