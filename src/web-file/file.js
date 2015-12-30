@@ -1,13 +1,28 @@
+/**
+ * Wrapper around HTML5 FileSystem API.
+ * Has only one public method: push.
+ * 'push' adds new content to file.
+ * If file becames to big, it's moved to oldFileName file.
+ */
 
 export default class WebFile {
-    constructor (options = {}) {
+    /**
+     * @param {Object} [options]
+     * @param {String} options.fileName
+     * @param {Number} options.maxSize
+     */
+    constructor (options) {
         this._fileName = options.fileName;
+        this._oldFileName = options.oldFileName;
         this._maxSize = options.maxSize;
         this._messagesQueue = [];
         this._isRunning = false;
         this._fsLink = null;
     }
 
+    /**
+     * @param {String} string
+     */
     push (string) {
         this._messagesQueue.push(string);
         if (!this._isRunning) {
@@ -67,7 +82,7 @@ export default class WebFile {
         this._copy(
             windowFsLink.root,
             fileEntry,
-            'debug-old.log',
+            this._oldFileName,
             () => fileWriter.truncate(0)
         );
     }
