@@ -25,16 +25,26 @@ export default class Logger {
     }
 
     /**
-     * Crates new logger with options of current logger.
+     * Creates new logger with options of current logger.
      * New logger behaves like the old one.
      * Options are synchronised in direction parent->clone.
      * @param {String} [prefix]
      * @returns {Logger}
      */
     clone (prefix) {
-        var clone = new Logger(prefix, shallowCopyObject(this._opt));
+        var clone = this.fork(prefix);
         this._clones.push(clone);
         return clone;
+    }
+
+    /**
+     * Creates new logger with options of current logger.
+     * Options aren't synchronised.
+     * @param {String} prefix
+     * @returns {Logger}
+     */
+    fork (prefix) {
+        return new Logger(prefix, shallowCopyObject(this._opt));
     }
 
     /**
@@ -161,11 +171,9 @@ function assertOptions(options) {
     if (!options) {
         throw new Error('You must specify "options" parameter for Logger');
     }
-    REQUIRED_OPTIONS.forEach(optionName => {
-        if (!options[optionName]) {
-            throw new Error(
-                'You must specify "options.' + optionName + '" parameter for Logger'
-            );
+    REQUIRED_OPTIONS.forEach(name => {
+        if (!options[name]) {
+            throw new Error(`You must specify "options.${name}" parameter for Logger`);
         }
     });
 }

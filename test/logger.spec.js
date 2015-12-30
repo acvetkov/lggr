@@ -284,4 +284,47 @@ describe('Logger', function () {
         });
     });
 
+    describe('fork', function () {
+        it('should return new Logger instance', function () {
+            var logger = new Logger('prefix', {
+                methods: ['log'], writers: {}, formatters: {}, levels: {}
+            });
+            var otherLogger = logger.fork();
+            assert.instanceOf(otherLogger, Logger);
+        });
+
+        it('should not sync options', function () {
+            var writer = new ConsoleWriter();
+            var writer2 = new ConsoleWriter();
+            var formatter = new ConsoleFormatter();
+            var logger = new Logger('parent-prefix', {
+                methods: ['log'],
+                writers: {console: writer},
+                formatters: {},
+                levels: {console: ['error']}
+            });
+            var writeSpy = sandbox.spy(writer, 'write');
+            var writeSpy2 = sandbox.spy(writer2, 'write');
+            var formatSpy = sandbox.spy(formatter, 'format');
+
+            var forkedLogger = logger.fork('fork-prefix');
+            forkedLogger.setLevels('console', ['error', 'warn']);
+            forkedLogger.setLevels('file', ['error', 'warn']);
+            forkedLogger.addFormatter('console', formatter);
+            forkedLogger.addWriter('file', writer2);
+
+            logger.log('Hello, %s!', 'world');
+            assert.notCalled(writeSpy);
+            assert.notCalled(formatSpy);
+
+            logger.setLevels('console', ['log']);
+            logger.addWriter('console', ['log']);
+
+            forkedLogger.log('Hello, %s!', 'world');
+            assert.notCalled(formatSpy);
+            assert.notCalled(writeSpy);
+            assert.notCalled(writeSpy2);
+        });
+    });
+
 });
