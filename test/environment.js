@@ -1,8 +1,9 @@
-'use strict';
+/**
+ * Sets testing environment
+ */
 
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import sinonChrome from 'sinon-chrome';
 import sinon from 'sinon';
 
 export function set() {
@@ -10,7 +11,6 @@ export function set() {
     sinon.assert.expose(chai.assert, {prefix: ''});
     setGlobal('sinon', sinon);
     setGlobal('assert', chai.assert);
-    setGlobal('chrome', sinonChrome);
 }
 
 export function reset() {
