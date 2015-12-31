@@ -1,6 +1,5 @@
 /**
  * Entry point of logger package
- * Exports method for loggers creation
  */
 
 import Logger from './logger';

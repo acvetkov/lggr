@@ -28,7 +28,6 @@ export function replacePlaceholders(replacer, args) {
 }
 
 /**
- * It's actually two-levels copy...
  * @param {Object} object
  * @returns {Object}
  */
@@ -38,7 +37,7 @@ export function shallowCopyObject(object) {
         if (Array.isArray(subObject)) {
             result[key] = subObject.slice();
         } else if (typeof subObject === 'function') {
-            result[key] = subObject;
+            result[key] = subObject.bind(object);
         } else if (typeof subObject === 'object') {
             result[key] = Object.assign({}, subObject);
         } else {
