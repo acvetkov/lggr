@@ -54,14 +54,22 @@ describe('utils', function () {
         var object = {
             a: {b: {c: 111}},
             d: {e: [1, 2, 3], f: 'fff'},
-            g: ['str', 111]
+            g: ['str', 111],
+            w: 321,
+            z: '123'
         };
+
         var copy = utils.shallowCopyObject(object);
+
         assert.notStrictEqual(copy, object);
         Object.keys(copy).forEach(key => {
             var copySub = copy[key];
             var parentSub = object[key];
-            assert.notStrictEqual(copySub, parentSub, `check for key: "${key}"`);
+            if (typeof parentSub === 'object') {
+                assert.notStrictEqual(copySub, parentSub, `check object key: "${key}"`);
+            } else {
+                assert.strictEqual(copySub, parentSub, `check primitive key: "${key}"`);
+            }
         });
     });
 
