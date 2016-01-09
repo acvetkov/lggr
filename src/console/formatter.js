@@ -21,7 +21,7 @@ export default class ConsoleFormatter {
      * @returns {Array<*>}
      */
     format (method, prefix, args) {
-        args = utils.appendPrefix(prefix, args);
-        return utils.replacePlaceholders(this._replacer, args);
+        var formatted = utils.replacePlaceholders(this._replacer, args);
+        return utils.appendPrefix(prefix, formatted);
     }
 }

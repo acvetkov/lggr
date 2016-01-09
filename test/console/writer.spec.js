@@ -4,6 +4,10 @@ import ConsoleWriter from '../../src/console/writer';
 var sandbox = sinon.sandbox.create();
 
 describe('console writer', function () {
+    afterEach(() => {
+        sandbox.restore();
+    });
+
     it('should create instance with write method', function () {
         var writer = new ConsoleWriter();
         assert.isFunction(writer.write);
