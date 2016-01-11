@@ -19,14 +19,23 @@ export default class WebFileFormatter {
      * @returns {Array<String>}
      */
     format (method, prefix, args = []) {
-        var parts = [createDatePart(), method.toUpperCase()];
-        parts.push(prefix ? `[${prefix}]:` : ':');
-        var formattedString = parts.join(' ');
+        var formattedString = createFirstPart(method, prefix);
         if (typeof args[0] === 'string') {
             formattedString += this._replacer.replace(args[0], args.slice(1));
         }
         return [formattedString];
     }
+}
+
+/**
+ * @param {String} method
+ * @param {String} [prefix]
+ * @returns {String}
+ */
+function createFirstPart(method, prefix) {
+    var parts = [createDatePart(), method.toUpperCase()];
+    parts.push(prefix ? `${prefix}:` : ':');
+    return parts.join(' ');
 }
 
 /**

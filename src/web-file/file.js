@@ -1,8 +1,7 @@
 /**
  * Wrapper around HTML5 FileSystem API.
- * Has only one public method: push.
- * 'push' adds new content to file.
- * If file becames to big, it's moved to oldFileName file.
+ * Has only one public method: push - it adds new content to file.
+ * If log file becames too big, it's moved to 'oldFileName'.
  */
 
 export default class WebFile {
