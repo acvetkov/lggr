@@ -72,7 +72,7 @@ export default class WebFile {
             this._fileName,
             {create: true, exclusive: false},
             fileEntry => fileEntry.createWriter(
-                fileWriter => callback(fileEntry, fileWriter)
+                fileWriter => callback(windowFsLink, fileEntry, fileWriter)
             )
         );
     }

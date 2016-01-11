@@ -22,6 +22,8 @@ export default class WebFileFormatter {
         var formattedString = createFirstPart(method, prefix);
         if (typeof args[0] === 'string') {
             formattedString += this._replacer.replace(args[0], args.slice(1));
+        } else {
+            formattedString += toString(args);
         }
         return [formattedString];
     }
@@ -34,7 +36,7 @@ export default class WebFileFormatter {
  */
 function createFirstPart(method, prefix) {
     var parts = [createDatePart(), method.toUpperCase()];
-    parts.push(prefix ? `${prefix}:` : ':');
+    parts.push(prefix ? `${prefix}: ` : ': ');
     return parts.join(' ');
 }
 
@@ -43,4 +45,18 @@ function createFirstPart(method, prefix) {
  */
 function createDatePart() {
     return new Date().toISOString();
+}
+
+/**
+ * @param {Array<*>} args
+ * @returns {String}
+ */
+function toString(args) {
+    return args.map(item => {
+        try {
+            return JSON.stringify(item);
+        } catch (e) {
+            return String(item);
+        }
+    }).join(' ');
 }
