@@ -12,7 +12,7 @@ import WebFileWriter from './web-file/writer';
 import WebFile from './web-file/file';
 
 export {
-    Logger as default,
+    Logger,
     Replacer,
     ConsoleWriter,
     ConsoleFormatter,

@@ -78,7 +78,8 @@ function createDefaultFormats(options) {
         l: formatLimitedString.bind(null, options.limitStringLength),
         i: formatIntegerNumber.bind(null, options.nanString),
         d: formatIntegerNumber.bind(null, options.nanString),
-        f: formatFloatNumber.bind(null, options.nanString)
+        f: formatFloatNumber.bind(null, options.nanString),
+        '%': () => '%'
     };
 }
 
@@ -106,7 +107,7 @@ function formatLimitedString(limitLength, data) {
  */
 function formatIntegerNumber(nanString, data) {
     return typeof data === 'number' ?
-        String(Math.round(data)) : nanString;
+        String(Math.floor(data)) : nanString;
 }
 
 /**
@@ -125,7 +126,7 @@ function formatFloatNumber(nanString, data) {
  */
 function formatJSON(data) {
     try {
-        return JSON.stringify(data, null, 1);
+        return JSON.stringify(data || '', null, 1);
     } catch (e) {
         return '';
     }

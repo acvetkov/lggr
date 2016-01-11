@@ -52,7 +52,13 @@ function createDatePart() {
  * @returns {String}
  */
 function toString(args) {
+    if (args.length === 0) {
+        return 'undefined';
+    }
     return args.map(item => {
+        if (item === undefined) {
+            return 'undefined';
+        }
         try {
             return JSON.stringify(item);
         } catch (e) {
