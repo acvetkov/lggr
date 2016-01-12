@@ -282,6 +282,23 @@ describe('Logger', function () {
             assert.calledOnce(writeSpy);
             assert.calledWith(writeSpy, 'log', 'parent-prefix', ['Hello, %s!', 'world']);
         });
+
+        it('should call custom constructor', function () {
+            var spy = sandbox.spy();
+            class NewLogger extends Logger {
+                constructor (prefix, options) {
+                    super(prefix, options);
+                    spy();
+                }
+            }
+            var newLogger = new NewLogger('prefix', {
+                methods: [], writers: {}, formatters: {}, levels: {}
+            });
+            assert.calledOnce(spy);
+
+            newLogger.clone('new prefix');
+            assert.calledTwice(spy);
+        });
     });
 
     describe('fork', function () {
@@ -325,6 +342,53 @@ describe('Logger', function () {
             assert.notCalled(writeSpy);
             assert.notCalled(writeSpy2);
         });
-    });
 
+        it('should call custom constructor', function () {
+            var spy = sandbox.spy();
+            class NewLogger extends Logger {
+                constructor (prefix, options) {
+                    super(prefix, options);
+                    spy();
+                }
+            }
+            var newLogger = new NewLogger('prefix', {
+                methods: [], writers: {}, formatters: {}, levels: {}
+            });
+            assert.calledOnce(spy);
+
+            newLogger.fork('new prefix');
+            assert.calledTwice(spy);
+        });
+
+        it('should fall back to Logger in case of absence of custom constructor', function () {
+            var spy = sandbox.spy();
+            var NewLogger = function (prefix, options) {
+                Logger.call(this, prefix, options);
+                spy();
+            };
+            badExtend(Logger, NewLogger);
+            var newLogger = new NewLogger('prefix', {
+                methods: [], writers: {}, formatters: {}, levels: {}
+            });
+            assert.calledOnce(spy);
+            assert.strictEqual(newLogger.constructor, Logger);
+
+            var forkedLogger = newLogger.fork('new prefix');
+            assert.calledOnce(spy);
+            assert.notInstanceOf(forkedLogger, NewLogger);
+            assert.instanceOf(forkedLogger, Logger);
+        });
+    });
 });
+
+/**
+ * Add parent prototype to child
+ * without setting appropriate constructor to child prototype
+ * @param {Object} Parent
+ * @param {Object} Child
+ */
+function badExtend(Parent, Child) {
+    var Foo = function () {};
+    Foo.prototype = Parent.prototype;
+    Child.prototype = new Foo();
+}
