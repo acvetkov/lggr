@@ -38,6 +38,9 @@ logger.addFormatter('file', new ConsoleFormatter())
 otherLogger.setLevels('console', ['error', 'warn'])
 otherLogger.addFormatter('file', new SomeOtherFormatter())
 
-// you can change forkedLogger options only by calling methods of forkedLogger itself
 var forkedLogger = logger.fork('forked-prefix');
+
+// you can change forkedLogger options only by calling methods of forkedLogger itself
+forkedLogger.setLevels('console', ['warn'])
+
 ```
