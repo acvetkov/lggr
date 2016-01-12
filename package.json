@@ -1,9 +1,9 @@
 {
-  "name": "logger",
+  "name": "lggr",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/ilya-babanov/lggr"
   },
   "main": "lib/index.js",
   "scripts": {
