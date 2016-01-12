@@ -60,7 +60,7 @@ export default class WebFile {
             return;
         }
         try {
-            var requestFs = window.webkitRequestFileSystem || window.requestFileSystem;
+            var requestFs = window.requestFileSystem || window.webkitRequestFileSystem;
             requestFs(window.PERSISTENT, 0, callback);
         } catch (e) {
             // FIXME
