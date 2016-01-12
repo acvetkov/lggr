@@ -2,6 +2,8 @@
  * Writes formatted arguments to console;
  */
 
+var apply = Function.prototype.apply;
+
 export default class ConsoleWriter {
     constructor () {
         this._console = console ? console : {};
@@ -14,7 +16,8 @@ export default class ConsoleWriter {
      */
     write (method, prefix, formattedArgs) {
         if (this._console[method]) {
-            this._console[method](...formattedArgs);
+            // do not call apply directly on console methods (IE)
+            apply.call(this._console[method], this._console, formattedArgs);
         }
     }
 }
