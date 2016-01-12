@@ -50,10 +50,16 @@ export default class WebFile {
         }
     }
 
+    /**
+     * @param {Function} callback
+     */
     _requestFile (callback) {
         this._requestFileSystem(fsLink => this._requestFileWriter(fsLink, callback));
     }
 
+    /**
+     * @param {Function} callback
+     */
     _requestFileSystem (callback) {
         if (this._fsLink) {
             callback(this._fsLink);
@@ -67,6 +73,10 @@ export default class WebFile {
         }
     }
 
+    /**
+     * @param {Object} windowFsLink
+     * @param {Function} callback
+     */
     _requestFileWriter (windowFsLink, callback) {
         windowFsLink.root.getFile(
             this._fileName,
@@ -77,6 +87,11 @@ export default class WebFile {
         );
     }
 
+    /**
+     * @param {Object} windowFsLink
+     * @param {Object} fileEntry
+     * @param {Object} fileWriter
+     */
     _rotateLogs (windowFsLink, fileEntry, fileWriter) {
         this._copy(
             windowFsLink.root,
@@ -86,6 +101,12 @@ export default class WebFile {
         );
     }
 
+    /**
+     * @param {String} cwd
+     * @param {Object} fileEntry
+     * @param {String} newPath
+     * @param {Function} callback
+     */
     _copy (cwd, fileEntry, newPath, callback) {
         fileEntry.copyTo(
             cwd, newPath,
@@ -94,6 +115,9 @@ export default class WebFile {
         );
     }
 
+    /**
+     * @param {Object} fileWriter
+     */
     _appendQueueData (fileWriter) {
         fileWriter.seek(fileWriter.length);
         fileWriter.write(
