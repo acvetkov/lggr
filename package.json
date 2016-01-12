@@ -1,0 +1,36 @@
+{
+  "name": "lggr",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ilya-babanov/lggr"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "code": "eslint ./src ./test && jscs ./src ./test",
+    "test": "npm run code && mocha --recursive --reporter mocha-tldr-reporter --compilers js:babel/register --require ./test/environment.js",
+    "test-teamcity": "npm run code && mocha --recursive --reporter mocha-teamcity-reporter --compilers js:babel/register --require ./test/environment.js",
+    "build": "npm run test-teamcity && npm run babel",
+    "babel": "npm run clean && babel ./src --out-dir ./lib",
+    "clean": "rm -rf ./lib/",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "chai": "^3.3.0",
+    "chai-as-promised": "^5.1.0",
+    "eslint": "^1.6.0",
+    "ghooks": "^1.0.0",
+    "jscs": "^2.3.1",
+    "mocha": "^2.3.3",
+    "mocha-teamcity-reporter": "^1.0.0",
+    "mocha-tldr-reporter": "^1.0.0",
+    "sinon": "^1.17.1"
+  },
+  "config": {
+    "ghooks": {
+      "pre-commit": "npm run code",
+      "pre-push": "npm test"
+    }
+  }
+}
