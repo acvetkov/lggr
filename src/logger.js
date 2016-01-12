@@ -44,7 +44,8 @@ export default class Logger {
      * @returns {Logger}
      */
     fork (prefix) {
-        return new Logger(prefix, shallowCopyObject(this._opt));
+        var Constructor = this.constructor ? this.constructor : Logger;
+        return new Constructor(prefix, shallowCopyObject(this._opt));
     }
 
     /**
