@@ -1,13 +1,13 @@
 # How It Works
 
 ```javascript
-import {Logger, ConsoleWriter, ConsoleFormatter, WebFileFriter, WebFileFormatter} from 'logger';
+import {Logger, ConsoleWriter, ConsoleFormatter, WebFileWriter, WebFileFormatter} from 'logger';
 
 var options = {
     methods: ['log', 'info', 'warn', 'error'],
     writers: {
         console: new ConsoleWriter(),
-        file: new WebFileFriter()
+        file: new WebFileWriter()
     },
     formatters: {
         console: new ConsoleFormatter(),
