@@ -58,6 +58,15 @@ describe('replacer', function () {
             assert.strictEqual(str, expected);
         });
 
+        it('should write json parse errors', function () {
+            var replacer = new Replacer();
+            var object = {a: 'b'};
+            object.c = object;
+            var str = replacer.replace('Bad Object: %o', [object]);
+            var expected = 'Bad Object: TypeError: Converting circular structure to JSON';
+            assert.strictEqual(str, expected);
+        });
+
         it('should not replace unknown placeholders', function () {
             var replacer = new Replacer();
             var str = replacer.replace('1 %u, 2 %k', ['h', 1.99]);

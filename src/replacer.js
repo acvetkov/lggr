@@ -128,6 +128,6 @@ function formatJSON(data) {
     try {
         return JSON.stringify(data || '', null, 1);
     } catch (e) {
-        return '';
+        return String(e);
     }
 }
