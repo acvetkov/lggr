@@ -71,7 +71,7 @@ export default class Logger {
      */
     setLevels (name, levels) {
         this._opt.levels[name] = levels;
-        this._updateClones('setLevels', [name, levels]);
+        this._updateClones('setLevels', name, levels);
     }
 
     /**
@@ -81,7 +81,7 @@ export default class Logger {
      */
     addWriter (name, writer) {
         this._opt.writers[name] = writer;
-        this._updateClones('addWriter', [name, writer]);
+        this._updateClones('addWriter', name, writer);
     }
 
     /**
@@ -92,7 +92,7 @@ export default class Logger {
         if (this._opt.writers[name]) {
             delete this._opt.writers[name];
         }
-        this._updateClones('removeWriter', [name]);
+        this._updateClones('removeWriter', name);
     }
 
     /**
@@ -102,7 +102,7 @@ export default class Logger {
      */
     addFormatter (name, formatter) {
         this._opt.formatters[name] = formatter;
-        this._updateClones('addFormatter', [name, formatter]);
+        this._updateClones('addFormatter', name, formatter);
     }
 
     /**
@@ -113,7 +113,7 @@ export default class Logger {
         if (this._opt.formatters[name]) {
             delete this._opt.formatters[name];
         }
-        this._updateClones('removeFormatter', [name]);
+        this._updateClones('removeFormatter', name);
     }
 
     /**
@@ -144,7 +144,7 @@ export default class Logger {
      * @param {} method
      * @param {} args
      */
-    _updateClones (method, args) {
+    _updateClones (method, ...args) {
         this._clones.forEach(clone => {
             clone[method](...args);
         });
@@ -172,7 +172,7 @@ function assertOptions(options) {
         throw new Error('You must specify "options" parameter for Logger');
     }
     REQUIRED_OPTIONS.forEach(name => {
-        if (!options[name]) {
+        if (options[name] === undefined) {
             throw new Error(`You must specify "options.${name}" parameter for Logger`);
         }
     });
