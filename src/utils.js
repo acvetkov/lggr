@@ -66,3 +66,19 @@ export function toString(args) {
         }
     }).join(' ');
 }
+
+/**
+ * Returns new formatter that combines all passed formatters.
+ * Each next formatter in list gets result from previous formatter.
+ * @param {Array<{format: Function}>} formatters
+ * @returns {{format: Function}}
+ */
+export function combineFormatters(formatters) {
+    return {
+        format: function (method, prefix, args) {
+            return formatters.reduce((formattedArgs, formatter) => {
+                return formatter.format(method, prefix, formattedArgs);
+            }, args);
+        }
+    };
+}
