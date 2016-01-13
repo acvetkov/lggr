@@ -1,19 +1,6 @@
-
 /**
- * @param {String} prefix
- * @param {Array<*>} args
- * @returns {Array<*>}
+ * Utility methods and helpers
  */
-export function appendPrefix(prefix, args) {
-    if (!prefix) {
-        return args;
-    }
-    if (typeof args[0] === 'string') {
-        return [`${prefix}: ${args[0]}`].concat(args.slice(1));
-    } else {
-        return [prefix].concat(args);
-    }
-}
 
 /**
  * @param {Replacer} replacer
@@ -51,7 +38,7 @@ export function shallowCopyObject(object) {
  * @param {Array<*>} args
  * @returns {String}
  */
-export function toString(args) {
+export function toString(args, delimiter = ' ') {
     if (args.length === 0) {
         return 'undefined';
     }
@@ -59,26 +46,43 @@ export function toString(args) {
         if (item === undefined) {
             return 'undefined';
         }
-        try {
-            return JSON.stringify(item);
-        } catch (e) {
-            return String(item);
+        if (typeof item === 'string') {
+            return item;
         }
-    }).join(' ');
+        return stringify(item);
+    }).join(delimiter);
+}
+
+/**
+ * @param {*} item
+ * @returns {String}
+ */
+function stringify(item) {
+    try {
+        return JSON.stringify(item);
+    } catch (e) {
+        return String(item);
+    }
 }
 
 /**
  * Returns new formatter that combines all passed formatters.
  * Each next formatter in list gets result from previous formatter.
- * @param {Array<{format: Function}>} formatters
- * @returns {{format: Function}}
+ * @param {Array<Function>} formatters
+ * @returns {Function}
  */
 export function combineFormatters(formatters) {
-    return {
-        format: function (method, prefix, args) {
-            return formatters.reduce((formattedArgs, formatter) => {
-                return formatter.format(method, prefix, formattedArgs);
-            }, args);
-        }
+    return function (method, prefix, args) {
+        return formatters.reduce((formattedArgs, format) => {
+            return format(method, prefix, formattedArgs);
+        }, args);
     };
+}
+
+/**
+ * @param {Object} data
+ * @returns {Object}
+ */
+export function identity(data) {
+    return data;
 }

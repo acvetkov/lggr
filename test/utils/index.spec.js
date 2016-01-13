@@ -1,34 +1,8 @@
 
-import * as utils from '../src/utils';
-import Replacer from '../src/replacer';
+import * as utils from '../../src/utils';
+import Replacer from '../../src/replacer';
 
 describe('utils', function () {
-    describe('appendPrefix', function () {
-        var tests = [{
-            prefix: 'prefix',
-            args: [123, '123'],
-            result: ['prefix', 123, '123']
-        }, {
-            prefix: 'test',
-            args: [{a: 123}, '123'],
-            result: ['test', {a: 123}, '123']
-        }, {
-            prefix: null,
-            args: [123, '123'],
-            result: [123, '123']
-        }, {
-            prefix: 'hello',
-            args: ['world', 123],
-            result: ['hello: world', 123]
-        }];
-
-        it('should append prefix to args', function () {
-            tests.forEach(data => {
-                var actual = utils.appendPrefix(data.prefix, data.args);
-                assert.deepEqual(actual, data.result);
-            });
-        });
-    });
 
     describe('replacePlaceholders', function () {
         var replacer = new Replacer();
@@ -95,26 +69,20 @@ describe('utils', function () {
 
     describe('combineFormatters', function () {
         it('should combine formatters', function () {
-            var formatter1 = {
-                format: function (method, prefix, args) {
-                    return args.join(' ');
-                }
+            var formatter1 = function (method, prefix, args) {
+                return args.join(' ');
             };
-            var formatter2 = {
-                format: function (method, prefix, args) {
-                    return [method, prefix].concat(args);
-                }
+            var formatter2 = function (method, prefix, args) {
+                return [method, prefix].concat(args);
             };
-            var formatter3 = {
-                format: function (method, prefix, args) {
-                    return args.join('|');
-                }
+            var formatter3 = function (method, prefix, args) {
+                return args.join('|');
             };
             var combinedFormatter = utils.combineFormatters(
                 [formatter1, formatter2, formatter3]
             );
             var args = [123, '123'];
-            var result = combinedFormatter.format('method', 'prefix', args);
+            var result = combinedFormatter('method', 'prefix', args);
             assert.strictEqual(result, 'method|prefix|123 123');
         });
     });

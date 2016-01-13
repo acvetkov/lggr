@@ -55,12 +55,13 @@ export default class Logger {
      * @param {Array<*>} args
      */
     message (method, ...args) {
-        this._forEachWriter((name, writer, formatter, levels) => {
+        this._forEachWriter((name, write, format, levels) => {
             if (isMethodAllowed(method, levels)) {
-                var formattedArgs = formatter
-                        ? formatter.format(method, this._prefix, args)
-                        : args;
-                writer.write(method, this._prefix, formattedArgs);
+                write(
+                    method,
+                    this._prefix,
+                    format ? format(method, this._prefix, args) : args
+                );
             }
         });
     }

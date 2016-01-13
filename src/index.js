@@ -4,22 +4,39 @@
 
 import Logger from './logger';
 import Replacer from './replacer';
-import ConsoleWriter from './console/writer';
-import ConsoleFormatter from './console/formatter';
-import ConsoleNormalizer from './console/normalizer';
-import WebFileFormatter from './web-file/formatter';
-import WebFileWriter from './web-file/writer';
-import WebFile from './web-file/file';
+
+import createConsoleWriter from './writers/console';
+import createWebFileWriter from './writers/web-file';
+
+import createDateFormatter from './formatters/date';
+import createMethodFormatter from './formatters/method';
+import createPrefixFormatter from './formatters/prefix';
+import createPlaceholdersFormatter from './formatters/placeholders';
+import createNormalFormatter from './formatters/placeholders-normalizer';
+import createJoinFormatter from './formatters/join';
+import createJoinFirstFormatter from './formatters/join-first';
+
+import WebFile from './utils/web-file';
 import * as utils from './utils';
+
+var combineFormatters = utils.combineFormatters;
 
 export {
     Logger,
     Replacer,
-    ConsoleWriter,
-    ConsoleFormatter,
-    ConsoleNormalizer,
-    WebFileWriter,
-    WebFileFormatter,
     WebFile,
+
+    createConsoleWriter,
+    createWebFileWriter,
+
+    createDateFormatter,
+    createMethodFormatter,
+    createPrefixFormatter,
+    createPlaceholdersFormatter,
+    createNormalFormatter,
+    createJoinFormatter,
+    createJoinFirstFormatter,
+
+    combineFormatters,
     utils
 };
