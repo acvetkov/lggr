@@ -10,6 +10,7 @@ import ConsoleNormalizer from './console/normalizer';
 import WebFileFormatter from './web-file/formatter';
 import WebFileWriter from './web-file/writer';
 import WebFile from './web-file/file';
+import * as utils from './utils';
 
 export {
     Logger,
@@ -19,5 +20,6 @@ export {
     ConsoleNormalizer,
     WebFileWriter,
     WebFileFormatter,
-    WebFile
+    WebFile,
+    utils
 };
