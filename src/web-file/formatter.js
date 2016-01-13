@@ -3,6 +3,7 @@
  */
 
 import Replacer from '../replacer';
+import toString from '../utils';
 
 export default class WebFileFormatter {
     /**
@@ -45,24 +46,4 @@ function createFirstPart(method, prefix) {
  */
 function createDatePart() {
     return new Date().toISOString();
-}
-
-/**
- * @param {Array<*>} args
- * @returns {String}
- */
-function toString(args) {
-    if (args.length === 0) {
-        return 'undefined';
-    }
-    return args.map(item => {
-        if (item === undefined) {
-            return 'undefined';
-        }
-        try {
-            return JSON.stringify(item);
-        } catch (e) {
-            return String(item);
-        }
-    }).join(' ');
 }

@@ -46,3 +46,23 @@ export function shallowCopyObject(object) {
         return result;
     }, {});
 }
+
+/**
+ * @param {Array<*>} args
+ * @returns {String}
+ */
+export function toString(args) {
+    if (args.length === 0) {
+        return 'undefined';
+    }
+    return args.map(item => {
+        if (item === undefined) {
+            return 'undefined';
+        }
+        try {
+            return JSON.stringify(item);
+        } catch (e) {
+            return String(item);
+        }
+    }).join(' ');
+}

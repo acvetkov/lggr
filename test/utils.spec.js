@@ -73,4 +73,24 @@ describe('utils', function () {
         });
     });
 
+    describe('toString', function () {
+        it('should stringify arguments', function () {
+            var args = [123, ['12', {a: 44}], {c: 'd'}];
+            var result = utils.toString(args);
+            assert.strictEqual(result, '123 ["12",{"a":44}] {"c":"d"}');
+        });
+
+        it('should write undefined for empty list', function () {
+            var args = [];
+            var result = utils.toString(args);
+            assert.strictEqual(result, 'undefined');
+        });
+
+        it('should write undefined for undefined elements', function () {
+            var args = [{a: 1}, undefined, 123, null];
+            var result = utils.toString(args);
+            assert.strictEqual(result, '{"a":1} undefined 123 null');
+        });
+    });
+
 });
