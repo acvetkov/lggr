@@ -93,4 +93,30 @@ describe('utils', function () {
         });
     });
 
+    describe('combineFormatters', function () {
+        it('should combine formatters', function () {
+            var formatter1 = {
+                format: function (method, prefix, args) {
+                    return args.join(' ');
+                }
+            };
+            var formatter2 = {
+                format: function (method, prefix, args) {
+                    return [method, prefix].concat(args);
+                }
+            };
+            var formatter3 = {
+                format: function (method, prefix, args) {
+                    return args.join('|');
+                }
+            };
+            var combinedFormatter = utils.combineFormatters(
+                [formatter1, formatter2, formatter3]
+            );
+            var args = [123, '123'];
+            var result = combinedFormatter.format('method', 'prefix', args);
+            assert.strictEqual(result, 'method|prefix|123 123');
+        });
+    });
+
 });
