@@ -1,50 +1,32 @@
-# Example
+## Example
 ```javascript
-import {
-    Logger,
-    Replacer,
-    WebFile,
+import * as lggr from 'lggr';
 
-    createConsoleWriter,
-    createWebFileWriter,
-
-    createDateFormatter,
-    createMethodFormatter,
-    createPrefixFormatter,
-    createPlaceholdersFormatter,
-    createNormalFormatter,
-    createJoinFormatter,
-    createJoinFirstFormatter,
-
-    combineFormatters
-} from 'logger';
-// You can also just write "import * as logModule from 'logger'"
-
-var webFile = new WebFile({
+var webFile = new lggr.WebFile({
     fileName: 'debug.log',
     oldFileName: 'debug-old.log',
     maxSize: 5 * 1024 * 1024
 });
 
-var webFileFormatter = combineFormatters([
-    createPlaceholdersFormatter(),
-    createPrefixFormatter(prefix => `-[${prefix}]-`),
-    createMethodFormatter(method => method.toUpperCase()),
-    createDateFormatter(),
-    createJoinFormatter(' # ')
+var webFileFormatter = lggr.combineFormatters([
+    lggr.createPlaceholdersFormatter(),
+    lggr.createPrefixFormatter(prefix => `-[${prefix}]-`),
+    lggr.createMethodFormatter(method => method.toUpperCase()),
+    lggr.createDateFormatter(),
+    lggr.createJoinFormatter(' # ')
 ]);
 
-var consoleFormatter = combineFormatters([
-    createNormalFormatter({j: 'o', l: 's'}),
-    createPrefixFormatter(),
-    createJoinFirstFormatter(2, '|')
+var consoleFormatter = lggr.combineFormatters([
+    lggr.createNormalFormatter({j: 'o', l: 's'}),
+    lggr.createPrefixFormatter(),
+    lggr.createJoinFirstFormatter(2, '|')
 ]);
 
 var options = {
     methods: ['log', 'info', 'warn', 'error'],
     writers: {
-        console: createConsoleWriter(),
-        file: createWebFileWriter(webFile)
+        console: lggr.createConsoleWriter(),
+        file: lggr.createWebFileWriter(webFile)
     },
     formatters: {
         console: consoleFormatter,
@@ -69,7 +51,7 @@ otherLogger.info('Hi, %o', {world: 'Earth', age: 9999999999})
 // this methods are applied to both logger and otherLogger
 // (and to any other clones of logger and clones of otherLogger and clones of clones of...)
 logger.setLevels('console', ['log'])
-logger.addFormatter('file', createDateFormatter())
+logger.addFormatter('file', lggr.createDateFormatter())
 
 // this methods are applied only to otherLogger
 otherLogger.setLevels('console', ['error', 'warn'])
