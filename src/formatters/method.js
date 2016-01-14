@@ -15,10 +15,6 @@ export default function create(mutator = identity) {
      * @returns {Array<String>}
      */
     return function formatMethod(method, prefix, args) {
-        var mutadedMethod = mutator(method);
-        if (mutadedMethod) {
-            return [mutator(method)].concat(args);
-        }
-        return args;
+        return [mutator(method)].concat(args);
     };
 }

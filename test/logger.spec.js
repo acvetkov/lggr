@@ -72,7 +72,7 @@ describe('Logger', function () {
             });
             logger.log('Hello, %s!', 'world');
             assert.calledOnce(this.write1);
-            assert.calledWith(this.write1, 'log', null, ['LOG Hello, world!']);
+            assert.calledWith(this.write1, 'log', null, ['LOG  Hello, world!']);
         });
 
         it('should write to passed writer without formatter', function () {
