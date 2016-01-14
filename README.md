@@ -38,7 +38,7 @@ var options = {
     }
 };
 
-var logger = new Logger('log-prefix', options);
+var logger = new lggr.Logger('log-prefix', options);
 
 logger.log('Hello, %s! I am %i years old!', 'world', 142);
 logger.error('Hello, %s! I am %i years old!', 'world', 142);
