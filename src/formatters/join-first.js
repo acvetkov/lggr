@@ -16,7 +16,8 @@ export default function create(count, delimiter) {
      */
     return function formatJoinFirst(method, prefix, args) {
         return [
-            toString(args.slice(0, count), delimiter)
-        ].concat(args.slice(count));
+            toString(args.slice(0, count), delimiter),
+            ...args.slice(count)
+        ];
     };
 }
