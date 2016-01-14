@@ -1,6 +1,6 @@
 
 import createPlaceholdersFromatter from '../../src/formatters/placeholders';
-import Replacer from '../../src/replacer';
+import Replacer from '../../src/utils/replacer';
 
 describe('placeholders formatter', function () {
     it('should replace placeholders', function () {

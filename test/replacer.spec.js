@@ -1,5 +1,5 @@
 
-import Replacer from '../src/replacer';
+import Replacer from '../src/utils/replacer';
 
 describe('replacer', function () {
     describe('replace', function () {

@@ -3,7 +3,7 @@
  */
 
 import Logger from './logger';
-import Replacer from './replacer';
+import Replacer from './utils/replacer';
 
 import createConsoleWriter from './writers/console';
 import createWebFileWriter from './writers/web-file';

@@ -1,6 +1,6 @@
 
 import * as utils from '../../src/utils';
-import Replacer from '../../src/replacer';
+import Replacer from '../../src/utils/replacer';
 
 describe('utils', function () {
 

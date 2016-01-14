@@ -2,7 +2,7 @@
  * Formats arguments for console writer
  */
 
-import Replacer from '../replacer';
+import Replacer from '../utils/replacer';
 import * as utils from '../utils';
 
 /**
