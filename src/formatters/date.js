@@ -13,7 +13,7 @@ export default function create(createDate = createDatePart) {
      * @returns {Array<String>}
      */
     return function formatDate(method, prefix, args) {
-        return [createDate()].concat(args);
+        return [createDate(), ...args];
     };
 }
 

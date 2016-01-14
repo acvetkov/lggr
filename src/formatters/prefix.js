@@ -15,6 +15,6 @@ export default function create(mutator = identity) {
      * @returns {Array<String>}
      */
     return function formatPrefix(method, prefix, args) {
-        return [mutator(prefix)].concat(args);
+        return [mutator(prefix), ...args];
     };
 }
