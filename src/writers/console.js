@@ -3,8 +3,8 @@
  */
 
 export default function create() {
-    var apply = Function.prototype.apply;
-    var _console = console ? console : {};
+    const apply = Function.prototype.apply;
+    const _console = console ? console : {};
 
     /**
      * @param {String} method

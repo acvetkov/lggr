@@ -6,7 +6,7 @@
  * @param {Object} [placeholders] - {placeholder: normalPlaceholder} map
  */
 export default function create(placeholders = {}) {
-    var regList = createRegExpList(placeholders);
+    const regList = createRegExpList(placeholders);
 
     /**
      * @param {String} method
