@@ -1,11 +1,29 @@
 
 import Logger from '../src/logger';
-import ConsoleWriter from '../src/console/writer';
-import ConsoleFormatter from '../src/console/formatter';
+import {combineFormatters} from '../src/utils';
+import createPlaceholdersFormatter from '../src/formatters/placeholders';
+import createPrefixFormatter from '../src/formatters/prefix';
+import createMethodFormatter from '../src/formatters/method';
+import createJoinFormatter from '../src/formatters/join';
 
 var sandbox = sinon.sandbox.create();
 
 describe('Logger', function () {
+    beforeEach(function () {
+        this.format1 = combineFormatters([
+            createPlaceholdersFormatter(),
+            createPrefixFormatter(prefix => prefix ? `${prefix}:` : ''),
+            createMethodFormatter(method => method.toUpperCase()),
+            createJoinFormatter()
+        ]);
+        this.format2 = combineFormatters([
+            createJoinFormatter(' - ')
+        ]);
+
+        this.write1 = sandbox.spy();
+        this.write2 = sandbox.spy();
+    });
+
     afterEach(function () {
         sandbox.restore();
     });
@@ -34,190 +52,155 @@ describe('Logger', function () {
 
     describe('logging logic', function () {
         it('should write to passed writer', function () {
-            var writer = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('prefix', {
                 methods: ['log'],
-                writers: {console: writer},
-                formatters: {console: formatter},
+                writers: {console: this.write1},
+                formatters: {console: this.format1},
                 levels: {console: ['log']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
             logger.log('Hello, %s!', 'world');
-            assert.calledOnce(formatSpy);
-            assert.calledOnce(writeSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledOnce(this.write1);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
+        });
+
+        it('should write to passed writer without prefix', function () {
+            var logger = new Logger(null, {
+                methods: ['log'],
+                writers: {console: this.write1},
+                formatters: {console: this.format1},
+                levels: {console: ['log']}
+            });
+            logger.log('Hello, %s!', 'world');
+            assert.calledOnce(this.write1);
+            assert.calledWith(this.write1, 'log', null, ['LOG  Hello, world!']);
         });
 
         it('should write to passed writer without formatter', function () {
-            var writer = new ConsoleWriter();
             var logger = new Logger(null, {
                 methods: ['log'],
-                writers: {console: writer},
+                writers: {console: this.write1},
                 formatters: {},
                 levels: {console: ['log']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
             logger.log('Hello, %s!', 'world');
-            assert.calledOnce(writeSpy);
-            assert.calledWith(writeSpy, 'log', null, ['Hello, %s!', 'world']);
+            assert.calledOnce(this.write1);
+            assert.calledWith(this.write1, 'log', null, ['Hello, %s!', 'world']);
         });
 
         it('should write to passed writer without levels', function () {
-            var writer = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('prefix', {
                 methods: ['log'],
-                writers: {console: writer},
-                formatters: {console: formatter},
+                writers: {console: this.write1},
+                formatters: {console: this.format1},
                 levels: {}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
             logger.log('Hello, %s!', 'world');
-            assert.calledOnce(formatSpy);
-            assert.calledOnce(writeSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledOnce(this.write1);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
         });
 
         it('should write to several passed writers with appropriate levels', function () {
-            var writer = new ConsoleWriter();
-            var writer2 = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('prefix', {
                 methods: ['log', 'error'],
-                writers: {console: writer, file: writer2},
-                formatters: {console: formatter, file: formatter},
+                writers: {console: this.write1, file: this.write2},
+                formatters: {console: this.format1, file: this.format2},
                 levels: {console: ['error'], file: ['log', 'error']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var writeSpy2 = sandbox.spy(writer2, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
 
             logger.error('Hello, %s!', 'world');
-            assert.calledOnce(writeSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledTwice(formatSpy);
-            assert.calledWith(formatSpy, 'error', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'error', 'prefix', ['prefix: Hello, world!']);
-            assert.calledWith(writeSpy2, 'error', 'prefix', ['prefix: Hello, world!']);
+            assert.calledOnce(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(this.write1, 'error', 'prefix', ['ERROR prefix: Hello, world!']);
+            assert.calledWith(this.write2, 'error', 'prefix', ['Hello, %s! - world']);
             sandbox.reset();
 
-            logger.log('Hello %s, %s%i!', 'again', 'world', 111);
-            assert.notCalled(writeSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledOnce(formatSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix',
-                              ['Hello %s, %s%i!', 'again', 'world', 111]);
-            assert.calledWith(writeSpy2, 'log', 'prefix', ['prefix: Hello again, world111!']);
+            logger.log('Hello', 'again', 'world', 111);
+            assert.notCalled(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(
+                this.write2, 'log', 'prefix',
+                ['Hello - again - world - 111']
+            );
         });
 
     });
 
     describe('setLevels', function () {
         it('should set levels to writer', function () {
-            var writer = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('prefix', {
-                methods: ['log', 'info'],
-                writers: {console: writer},
-                formatters: {console: formatter},
+                methods: ['log', 'info', 'error'],
+                writers: {console: this.write1},
+                formatters: {console: this.format1},
                 levels: {console: ['error']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
-            logger.log('Hello, %s!', 'world');
-            assert.notCalled(formatSpy);
-            assert.notCalled(writeSpy);
 
-            logger.setLevels('console', ['log']);
             logger.log('Hello, %s!', 'world');
-            assert.calledOnce(formatSpy);
-            assert.calledOnce(writeSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
+            logger.info('Hello, %s!', 'world');
+            assert.notCalled(this.write1);
+
+            logger.setLevels('console', ['log', 'info']);
+            logger.log('Hello, %s!', 'world');
+            logger.info('Hello, %s!', 'world');
+            logger.error('Hello, %s!', 'world');
+            assert.calledTwice(this.write1);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
+            assert.calledWith(this.write1, 'info', 'prefix', ['INFO prefix: Hello, world!']);
         });
     });
 
     describe('add/remove Writer/Formatter', function () {
         it('should add writer and formatter to logger', function () {
-            var writer = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
-            var writer2 = new ConsoleWriter();
             var logger = new Logger('prefix', {
                 methods: ['log', 'info'],
-                writers: {console: writer},
-                formatters: {console: formatter},
+                writers: {console: this.write1},
+                formatters: {console: this.format1},
                 levels: {console: ['log']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var writeSpy2 = sandbox.spy(writer2, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
 
-            logger.addWriter('file', writer2);
+            logger.addWriter('file', this.write2);
             logger.log('Hello, %s!', 'world');
-
-            assert.calledOnce(writeSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledOnce(formatSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
-            assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledOnce(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
+            assert.calledWith(this.write2, 'log', 'prefix', ['Hello, %s!', 'world']);
             sandbox.reset();
 
-            logger.addFormatter('file', formatter);
+            logger.addFormatter('file', this.format2);
             logger.log('Hello, %s!', 'world');
-
-            assert.calledOnce(writeSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledTwice(formatSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
-            assert.calledWith(writeSpy2, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledOnce(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
+            assert.calledWith(this.write2, 'log', 'prefix', ['Hello, %s! - world']);
         });
 
         it('should remove writer and formatter from logger', function () {
-            var writer = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
-            var writer2 = new ConsoleWriter();
             var logger = new Logger('prefix', {
                 methods: ['log', 'info'],
-                writers: {console: writer, file: writer2},
-                formatters: {console: formatter, file: formatter},
+                writers: {console: this.write1, file: this.write2},
+                formatters: {console: this.format1, file: this.format2},
                 levels: {console: ['log']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var writeSpy2 = sandbox.spy(writer2, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
 
             logger.log('Hello, %s!', 'world');
-            assert.calledOnce(writeSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledTwice(formatSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
-            assert.calledWith(writeSpy2, 'log', 'prefix', ['prefix: Hello, world!']);
+            assert.calledOnce(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
+            assert.calledWith(this.write2, 'log', 'prefix', ['Hello, %s! - world']);
             sandbox.reset();
 
             logger.removeFormatter('file');
             logger.log('Hello, %s!', 'world');
-            assert.calledOnce(writeSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledOnce(formatSpy);
-            assert.calledWith(formatSpy, 'log', 'prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'prefix', ['prefix: Hello, world!']);
-            assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.calledOnce(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(this.write1, 'log', 'prefix', ['LOG prefix: Hello, world!']);
+            assert.calledWith(this.write2, 'log', 'prefix', ['Hello, %s!', 'world']);
             sandbox.reset();
 
             logger.removeWriter('console');
             logger.log('Hello, %s!', 'world');
-            assert.notCalled(writeSpy);
-            assert.notCalled(formatSpy);
-            assert.calledOnce(writeSpy2);
-            assert.calledWith(writeSpy2, 'log', 'prefix', ['Hello, %s!', 'world']);
+            assert.notCalled(this.write1);
+            assert.calledOnce(this.write2);
+            assert.calledWith(this.write2, 'log', 'prefix', ['Hello, %s!', 'world']);
         });
     });
 
@@ -231,56 +214,46 @@ describe('Logger', function () {
         });
 
         it('should sync options in direction parent->clone', function () {
-            var writer = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('prefix', {
                 methods: ['log'],
-                writers: {console: writer},
+                writers: {console: this.write1},
                 formatters: {},
                 levels: {}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
 
-            var clonedLogger = logger.clone('new-prefix');
+            var clonedLogger = logger.clone('p');
             logger.setLevels('console', ['log']);
-            logger.addFormatter('console', formatter);
-
+            logger.addFormatter('console', this.format1);
             clonedLogger.log('Hello, %s!', 'world');
-            assert.calledOnce(formatSpy);
-            assert.calledOnce(writeSpy);
-            assert.calledWith(formatSpy, 'log', 'new-prefix', ['Hello, %s!', 'world']);
-            assert.calledWith(writeSpy, 'log', 'new-prefix', ['new-prefix: Hello, world!']);
+            assert.calledOnce(this.write1);
+            assert.calledWith(this.write1, 'log', 'p', ['LOG p: Hello, world!']);
         });
 
         it('should not sync options in direction clone->parent', function () {
-            var writer = new ConsoleWriter();
-            var writer2 = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('parent-prefix', {
-                methods: ['log'],
-                writers: {console: writer},
+                methods: ['log', 'error'],
+                writers: {console: this.write1},
                 formatters: {},
                 levels: {console: ['error']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var writeSpy2 = sandbox.spy(writer2, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
 
             var clonedLogger = logger.clone('clone-prefix');
             clonedLogger.setLevels('console', ['log', 'error']);
-            clonedLogger.addFormatter('console', formatter);
-            clonedLogger.addWriter('file', writer2);
+            clonedLogger.addFormatter('console', this.format1);
+            clonedLogger.addWriter('file', this.write2);
 
             logger.log('Hello, %s!', 'world');
-            assert.notCalled(writeSpy);
-            assert.notCalled(formatSpy);
+            assert.notCalled(this.write1);
+            assert.notCalled(this.write2);
+
             logger.setLevels('console', ['log']);
             logger.log('Hello, %s!', 'world');
-            assert.notCalled(formatSpy);
-            assert.notCalled(writeSpy2);
-            assert.calledOnce(writeSpy);
-            assert.calledWith(writeSpy, 'log', 'parent-prefix', ['Hello, %s!', 'world']);
+            assert.notCalled(this.write2);
+            assert.calledOnce(this.write1);
+            assert.calledWith(
+                this.write1, 'log', 'parent-prefix',
+                ['Hello, %s!', 'world']
+            );
         });
 
         it('should call custom constructor', function () {
@@ -311,36 +284,27 @@ describe('Logger', function () {
         });
 
         it('should not sync options', function () {
-            var writer = new ConsoleWriter();
-            var writer2 = new ConsoleWriter();
-            var formatter = new ConsoleFormatter();
             var logger = new Logger('parent-prefix', {
                 methods: ['log'],
-                writers: {console: writer},
+                writers: {console: this.write1},
                 formatters: {},
                 levels: {console: ['error']}
             });
-            var writeSpy = sandbox.spy(writer, 'write');
-            var writeSpy2 = sandbox.spy(writer2, 'write');
-            var formatSpy = sandbox.spy(formatter, 'format');
 
             var forkedLogger = logger.fork('fork-prefix');
             forkedLogger.setLevels('console', ['error', 'warn']);
             forkedLogger.setLevels('file', ['error', 'warn']);
-            forkedLogger.addFormatter('console', formatter);
-            forkedLogger.addWriter('file', writer2);
+            forkedLogger.addFormatter('console', this.format1);
+            forkedLogger.addWriter('file', this.write2);
 
             logger.log('Hello, %s!', 'world');
-            assert.notCalled(writeSpy);
-            assert.notCalled(formatSpy);
+            assert.notCalled(this.write1);
 
             logger.setLevels('console', ['log']);
-            logger.addWriter('console', ['log']);
 
             forkedLogger.log('Hello, %s!', 'world');
-            assert.notCalled(formatSpy);
-            assert.notCalled(writeSpy);
-            assert.notCalled(writeSpy2);
+            assert.notCalled(this.write1);
+            assert.notCalled(this.write1);
         });
 
         it('should call custom constructor', function () {

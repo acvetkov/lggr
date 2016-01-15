@@ -2,26 +2,21 @@
  * Normalizes placeholders for console writer
  */
 
-import * as utils from '../utils';
-
-export default class ConsoleNormalizer {
-    /**
-     * @param {Object} [placeholders] - {placeholder: normalPlaceholder} map
-     */
-    constructor (placeholders = {}) {
-        this._regList = createRegExpList(placeholders);
-    }
+/**
+ * @param {Object} [placeholders] - {placeholder: normalPlaceholder} map
+ */
+export default function create(placeholders = {}) {
+    const regList = createRegExpList(placeholders);
 
     /**
      * @param {String} method
      * @param {String} [prefix]
-     * @param {Array<*>} [args]
+     * @param {Array<*>} args
      * @returns {Array<*>}
      */
-    format (method, prefix, args) {
-        var normalized = normalizePlaceholders(args, this._regList);
-        return utils.appendPrefix(prefix, normalized);
-    }
+    return function formatPlaceholdersNormalizer(method, prefix, args) {
+        return normalizePlaceholders(args, regList);
+    };
 }
 
 /**

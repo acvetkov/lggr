@@ -1,5 +1,5 @@
 
-import ConsoleWriter from '../../src/console/writer';
+import createConsoleWriter from '../../src/writers/console';
 
 var sandbox = sinon.sandbox.create();
 
@@ -8,22 +8,17 @@ describe('console writer', function () {
         sandbox.restore();
     });
 
-    it('should create instance with write method', function () {
-        var writer = new ConsoleWriter();
-        assert.isFunction(writer.write);
-    });
-
     it('should write to global console', function () {
-        var writer = new ConsoleWriter();
+        var write = createConsoleWriter();
         var args = ['test', 1, 2, {a: 'b'}];
 
         var logStub = sandbox.stub(console, 'log');
         var warnStub = sandbox.stub(console, 'warn');
         var errorStub = sandbox.stub(console, 'error');
 
-        writer.write('log', 'prefix', args);
-        writer.write('warn', 'prefix', args);
-        writer.write('error', 'prefix', args);
+        write('log', 'prefix', args);
+        write('warn', 'prefix', args);
+        write('error', 'prefix', args);
 
         assert.calledOnce(logStub);
         assert.calledOnce(warnStub);
