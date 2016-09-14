@@ -5,6 +5,7 @@ import createPlaceholdersFormatter from '../src/formatters/placeholders';
 import createPrefixFormatter from '../src/formatters/prefix';
 import createMethodFormatter from '../src/formatters/method';
 import createJoinFormatter from '../src/formatters/join';
+import placeholdersNormalizer from '../src/formatters/placeholders-normalizer';
 
 var sandbox = sinon.sandbox.create();
 
@@ -47,6 +48,32 @@ describe('Logger', function () {
             assert.isFunction(logger.error);
             assert.isFunction(logger.foo);
             assert.isFunction(logger.bar);
+        });
+    });
+
+    describe('formatters', function () {
+        it.only('should not modify args for another writers', function () {
+            var format3 = sinon.spy(placeholdersNormalizer({
+                o: 'i'
+            }));
+
+            var format4 = sinon.spy(placeholdersNormalizer({
+                k: 's'
+            }));
+
+            var logger = new Logger('prefix', {
+                methods: ['log'],
+                writers: {console: this.write1, console2: this.write2},
+                formatters: {console: format3, console2: format4},
+                levels: {console: ['log'], console2: ['log']}
+            });
+
+            logger.log('%o %k', 'test');
+
+            sinon.assert.calledOnce(format4);
+            assert.deepEqual(format4.args[0][2], ['%o %s', 'test']);
+            sinon.assert.calledOnce(format3);
+            assert.deepEqual(format3.args[0][2], ['%i %k', 'test']);
         });
     });
 

@@ -60,7 +60,7 @@ export default class Logger {
                 write(
                     method,
                     this._prefix,
-                    format ? format(method, this._prefix, args) : args
+                    format ? format(method, this._prefix, args.slice()) : args
                 );
             }
         });
