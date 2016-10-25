@@ -18,8 +18,12 @@ export default function create(createDate = createDatePart) {
 }
 
 /**
+ * Returns current timezone date in ISO format
  * @returns {String}
  */
 function createDatePart() {
-    return new Date().toISOString();
+    const timeZoneOffset = (new Date()).getTimezoneOffset() * 60000; // offset in milliseconds
+    const dateWithReversedOffset = new Date(Date.now() - timeZoneOffset);
+
+    return dateWithReversedOffset.toISOString().slice(0, -1); // remove Zulu timezone abbreviation
 }
